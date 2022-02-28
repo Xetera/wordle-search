@@ -1,179 +1,161 @@
-import * as React from "react"
+import {
+  TextInput,
+  Text,
+  Container,
+  AppShell,
+  Title,
+  Group,
+  MantineProvider,
+  GlobalStyles,
+  NormalizeCSS,
+  Button,
+} from "@mantine/core";
+import { graphql } from "gatsby";
+import * as React from "react";
+import add from "date-fns/add";
+import format from "date-fns/format";
+import { useForm } from "@mantine/hooks";
+import formatDistance from "date-fns/formatDistance";
+import differenceInDays from "date-fns/differenceInDays";
+import Helmet from "react-helmet";
 
-// styles
-const pageStyles = {
-  color: "#232129",
-  padding: 96,
-  fontFamily: "-apple-system, Roboto, sans-serif, serif",
-}
-const headingStyles = {
-  marginTop: 0,
-  marginBottom: 64,
-  maxWidth: 320,
-}
-const headingAccentStyles = {
-  color: "#663399",
-}
-const paragraphStyles = {
-  marginBottom: 48,
-}
-const codeStyles = {
-  color: "#8A6534",
-  padding: 4,
-  backgroundColor: "#FFF4DB",
-  fontSize: "1.25rem",
-  borderRadius: 4,
-}
-const listStyles = {
-  marginBottom: 96,
-  paddingLeft: 0,
-}
-const listItemStyles = {
-  fontWeight: 300,
-  fontSize: 24,
-  maxWidth: 560,
-  marginBottom: 30,
-}
+type UpcomingWord = { type: "notValid" } | { type: "valid"; date: Date };
 
-const linkStyle = {
-  color: "#8954A8",
-  fontWeight: "bold",
-  fontSize: 16,
-  verticalAlign: "5%",
-}
-
-const docLinkStyle = {
-  ...linkStyle,
-  listStyleType: "none",
-  marginBottom: 24,
-}
-
-const descriptionStyle = {
-  color: "#232129",
-  fontSize: 14,
-  marginTop: 10,
-  marginBottom: 0,
-  lineHeight: 1.25,
-}
-
-const docLink = {
-  text: "TypeScript Documentation",
-  url: "https://www.gatsbyjs.com/docs/how-to/custom-configuration/typescript/",
-  color: "#8954A8",
-}
-
-const badgeStyle = {
-  color: "#fff",
-  backgroundColor: "#088413",
-  border: "1px solid #088413",
-  fontSize: 11,
-  fontWeight: "bold",
-  letterSpacing: 1,
-  borderRadius: 4,
-  padding: "4px 6px",
-  display: "inline-block",
-  position: "relative" as "relative",
-  top: -2,
-  marginLeft: 10,
-  lineHeight: 1,
-}
-
-// data
-const links = [
-  {
-    text: "Tutorial",
-    url: "https://www.gatsbyjs.com/docs/tutorial/",
-    description:
-      "A great place to get started if you're new to web development. Designed to guide you through setting up your first Gatsby site.",
-    color: "#E95800",
-  },
-  {
-    text: "How to Guides",
-    url: "https://www.gatsbyjs.com/docs/how-to/",
-    description:
-      "Practical step-by-step guides to help you achieve a specific goal. Most useful when you're trying to get something done.",
-    color: "#1099A8",
-  },
-  {
-    text: "Reference Guides",
-    url: "https://www.gatsbyjs.com/docs/reference/",
-    description:
-      "Nitty-gritty technical descriptions of how Gatsby works. Most useful when you need detailed information about Gatsby's APIs.",
-    color: "#BC027F",
-  },
-  {
-    text: "Conceptual Guides",
-    url: "https://www.gatsbyjs.com/docs/conceptual/",
-    description:
-      "Big-picture explanations of higher-level Gatsby concepts. Most useful for building understanding of a particular topic.",
-    color: "#0D96F2",
-  },
-  {
-    text: "Plugin Library",
-    url: "https://www.gatsbyjs.com/plugins",
-    description:
-      "Add functionality and customize your Gatsby site or app with thousands of plugins built by our amazing developer community.",
-    color: "#8EB814",
-  },
-  {
-    text: "Build and Host",
-    url: "https://www.gatsbyjs.com/cloud",
-    badge: true,
-    description:
-      "Now you’re ready to show the world! Give your Gatsby site superpowers: Build and host on Gatsby Cloud. Get started for free!",
-    color: "#663399",
-  },
-]
+const baseDate = new Date(2021, 5, 19, 0, 0, 0, 0);
 
 // markup
-const IndexPage = () => {
-  return (
-    <main style={pageStyles}>
-      <title>Home Page</title>
-      <h1 style={headingStyles}>
-        Congratulations
-        <br />
-        <span style={headingAccentStyles}>— you just made a Gatsby site! </span>
-        🎉🎉🎉
-      </h1>
-      <p style={paragraphStyles}>
-        Edit <code style={codeStyles}>src/pages/index.tsx</code> to see this page
-        update in real-time. 😎
-      </p>
-      <ul style={listStyles}>
-        <li style={docLinkStyle}>
-          <a
-            style={linkStyle}
-            href={`${docLink.url}?utm_source=starter&utm_medium=ts-docs&utm_campaign=minimal-starter-ts`}
-          >
-            {docLink.text}
-          </a>
-        </li>
-        {links.map(link => (
-          <li key={link.url} style={{ ...listItemStyles, color: link.color }}>
-            <span>
-              <a
-                style={linkStyle}
-                href={`${link.url}?utm_source=starter&utm_medium=start-page&utm_campaign=minimal-starter-ts`}
-              >
-                {link.text}
-              </a>
-              {link.badge && (
-                <span style={badgeStyle} aria-label="New Badge">
-                  NEW!
-                </span>
-              )}
-              <p style={descriptionStyle}>{link.description}</p>
-            </span>
-          </li>
-        ))}
-      </ul>
-      <img
-        alt="Gatsby G Logo"
-        src="data:image/svg+xml,%3Csvg width='24' height='24' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M12 2a10 10 0 110 20 10 10 0 010-20zm0 2c-3.73 0-6.86 2.55-7.75 6L14 19.75c3.45-.89 6-4.02 6-7.75h-5.25v1.5h3.45a6.37 6.37 0 01-3.89 4.44L6.06 9.69C7 7.31 9.3 5.63 12 5.63c2.13 0 4 1.04 5.18 2.65l1.23-1.06A7.959 7.959 0 0012 4zm-8 8a8 8 0 008 8c.04 0 .09 0-8-8z' fill='%23639'/%3E%3C/svg%3E"
-      />
-    </main>
-  )
-}
+const IndexPage = (props: { data: { wordle: { words: string[] } } }) => {
+  const form = useForm({
+    initialValues: {
+      word: "",
+    },
 
-export default IndexPage
+    validationRules: {
+      word: (value: string) => value.length === 5,
+    },
+  });
+  const [word, setWord] = React.useState<UpcomingWord | undefined>();
+  const [answer, setAnswer] = React.useState<string | undefined>();
+
+  function search(word: string) {
+    const transformedWord = word.toLowerCase();
+    const index = props.data.wordle.words.indexOf(transformedWord);
+    if (index === -1) {
+      setWord({ type: "notValid" });
+      return;
+    }
+    // const t = new Date().setHours()
+    const nextDate = add(baseDate, { days: index });
+    nextDate.setHours(0, 0, 0, 0);
+    setWord({ type: "valid", date: nextDate });
+  }
+
+  function revealAnswer() {
+    if (answer) {
+      setAnswer(undefined);
+      return;
+    }
+    const days = differenceInDays(new Date(), baseDate);
+    const newAnswer = props.data.wordle.words[days];
+    setAnswer(newAnswer);
+  }
+
+  return (
+    <MantineProvider
+      theme={{
+        colorScheme: "dark",
+        // fontFamily:
+        //   "Poppins,Inter,-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Helvetica,Arial,sans-serif,Apple Color Emoji,Segoe UI Emoji",
+      }}
+    >
+      <GlobalStyles />
+      <NormalizeCSS />
+      <Helmet>
+        <title>Wordle Search</title>
+        <meta
+          name="description"
+          content="Find today's correct word and figure out when your word will be the answer."
+        />
+      </Helmet>
+      <AppShell>
+        <Container>
+          <Group direction="column" spacing={16}>
+            <Title>Wordle Search</Title>
+            <Text size="xl" style={{ lineHeight: "1.7" }}>
+              Wordle has a public list of all possible answers, each day's
+              correct answer goes in order according to that list. It's possible
+              to predict the correct answer for each day and ruin the fun for
+              absolutely no reason whatsoever.
+            </Text>
+            <Text color="dimmed">
+              Please don't use this to spoil the fun for others.
+            </Text>
+            <Container
+              style={{
+                width: "100%",
+                height: "1px",
+                background: "rgba(255, 255, 255, 0.04)",
+              }}
+            />
+            <Button color="gray" onClick={revealAnswer}>
+              {answer ? "Hide" : "Reveal"} Today's Answer
+            </Button>
+            {answer && (
+              <Text>
+                Today's answer is <b>{answer}</b>
+              </Text>
+            )}
+            <form onSubmit={form.onSubmit((values) => search(values.word))}>
+              <TextInput
+                style={{ width: "100%" }}
+                label="When will my word be the correct answer?"
+                placeholder="crane"
+                size="lg"
+                {...form.getInputProps("word")}
+              />
+            </form>
+            {word &&
+              (word.type === "notValid" ? (
+                <Group spacing={4} direction="column">
+                  <Text>
+                    Sorry, that word will <b>never</b> be a correct answer.
+                  </Text>
+                  <Title>Huh? But the game doesn't say it's invalid??</Title>
+                  <Text style={{ lineHeight: "1.7" }} size="lg">
+                    Wordle keeps 2 separate list of valid words. One with the
+                    ones that will eventually be the answer, and another with
+                    valid guesses that will never actually be the answer.
+                  </Text>
+                </Group>
+              ) : (
+                <Group
+                  direction="column"
+                  spacing={4}
+                  style={{ fontSize: "16px" }}
+                  sx={{ fontSize: "16px" }}
+                >
+                  <Text inherit>
+                    Your word will be the correct answer on{" "}
+                    <b>{format(word.date, "LLLL dd, yyyy")}</b>
+                  </Text>
+                  <Text inherit>
+                    That's in <b>{formatDistance(word.date, new Date())}</b>!
+                  </Text>
+                </Group>
+              ))}
+          </Group>
+        </Container>
+      </AppShell>
+    </MantineProvider>
+  );
+};
+
+export const query = graphql`
+  query WordsQuery {
+    wordle: wordleWords {
+      words
+    }
+  }
+`;
+
+export default IndexPage;
